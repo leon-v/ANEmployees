@@ -52,31 +52,101 @@ if ($header !== $expectedColumns) {
     jsonResponse(['message' => "Invalid CSV format. Make sure the CSV file has the correct columns."], 400);
 }
 
+
+// Get existing Employees
+$statement = $mySql->prepareStatement("SELECT
+    employeeId, email
+    FROM Employee
+");
+$mySql->bindParams($statement);
+$mySql->executeStatement($statement);
+$result = $mySql->getResult($statement);
+$existingEmployees = $mySql->fetchAssoc($result, 'email');
+$mySql->closeStatement($statement);
+$existingEmployees = array_change_key_case($existingEmployees, CASE_LOWER);
+
+
+// Get existing Companies
+$statement = $mySql->prepareStatement("SELECT
+    companyId, `name`
+    FROM Company
+");
+$mySql->bindParams($statement);
+$mySql->executeStatement($statement);
+$result = $mySql->getResult($statement);
+$existingCompanies = $mySql->fetchAssoc($result, 'name');
+$mySql->closeStatement($statement);
+$existingCompanies = array_change_key_case($existingCompanies, CASE_LOWER);
+
+
 // Prepare the insert statement once and get the statement
-$insertStmt = $mySql->prepareStatement("INSERT
-    INTO  Employee
-    (company, `name`, email, salary)
+$insertEmployeeStatement = $mySql->prepareStatement("INSERT
+    INTO Employee
+    (`name`, email)
     VALUES
-    (?, ?, ?, ?)
+    (?, ?)
+");
+
+$insertCompanyStatement = $mySql->prepareStatement("INSERT
+    INTO Company
+    (`name`)
+    VALUES
+    (?)
+");
+
+$insertSallaryStatement = $mySql->prepareStatement("INSERT
+    INTO EmployeeSalary
+    (employeeId, companyId, salary)
+    VALUES
+    (?, ?, ?)
 ");
 
 
 // Loop through the CSV data and insert multiple rows
 while (($row = fgetcsv($file)) !== false) {
-    $companyName = $row[0];
-    $employeeName = $row[1];
-    $emailAddress = $row[2];
-    $salary = $row[3];
 
-    // Bind parameters using the statement
-    $mySql->bindParams($insertStmt, array($companyName, $employeeName, $emailAddress, $salary));
+    $employee = new stdClass();
+    $company = new stdClass();
+    $salary = new stdClass();
 
-    // Execute the statement
-    $mySql->executeStatement($insertStmt);
+    [$company->name, $employee->name, $employee->email, $salary->salary] = $row;
+
+    // Add the employee if they don't exist already.
+    $emailKey = strtolower($employee->email);
+    $existingEmployee = $existingEmployees[$emailKey] ?? null;
+
+    if ($existingEmployee) {
+        $employee->employeeId = $existingEmployee->employeeId;
+    }
+    else{
+        $mySql->bindParams($insertEmployeeStatement, $employee->name, $employee->email);
+        $mySql->executeStatement($insertEmployeeStatement);
+        $employee->employeeId = $insertEmployeeStatement->insert_id;
+        $existingEmployees[$emailKey] = $employee;
+    }
+
+    // Add the company if they don't exist already
+    $companyKey = strtolower($company->name);
+    $existingCompany = $existingCompanies[$companyKey] ?? null;
+
+    if ($existingCompany) {
+        $company->companyId = $existingCompany->companyId;
+    }
+    else{
+        $mySql->bindParams($insertCompanyStatement, $company->name);
+        $mySql->executeStatement($insertCompanyStatement);
+        $company->companyId = $insertCompanyStatement->insert_id;
+        $existingCompanies[$companyKey] = $company;
+    }
+
+    $mySql->bindParams($insertSallaryStatement, $employee->employeeId, $company->companyId, $salary->salary);
+    $mySql->executeStatement($insertSallaryStatement);
 }
 
 // Close the prepared statement, CSV file, and database connection
-$mySql->closeStatement($insertStmt);
+$mySql->closeStatement($insertEmployeeStatement);
+$mySql->closeStatement($insertCompanyStatement);
+$mySql->closeStatement($insertSallaryStatement);
 
 fclose($file);
 

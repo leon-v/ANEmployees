@@ -1,9 +1,10 @@
 <?php
+
 include_once "Functions.php";
 
 class MySqlDb
 {
-    private $connection;
+    private MySQLi $connection;
 
     public function __construct()
     {
@@ -19,23 +20,41 @@ class MySqlDb
         }
     }
 
-    public function prepareStatement($sql)
+    public function prepareStatement(string $sql): mysqli_stmt
     {
-        $stmt = $this->connection->prepare($sql);
-        if (!$stmt) {
-            die("Error in statement preparation: " . $this->connection->error);
+        $statement = $this->connection->prepare($sql);
+
+        if (!$statement) {
+            throw new Exception("Error in statement preparation: " . $this->connection->error);
         }
 
-        return $stmt;
+        return $statement;
     }
 
-    public function bindParams($stmt, $params = array())
+    public function bindParams(mysqli_stmt $statement, ...$params): void
     {
-        if (!empty($params)) {
-            $types = '';
-            $bindParams = array();
+        if (empty($params)) {
+            return;
+        }
 
-            foreach ($params as $param) {
+        $types = '';
+        $bindParams = array();
+
+        foreach ($params as $param) {
+            if (is_array($param)) {
+                foreach ($param as $arrayParam) {
+                    if (is_int($arrayParam)) {
+                        $types .= 'i'; // integer
+                    } elseif (is_double($arrayParam)) {
+                        $types .= 'd'; // double
+                    } elseif (is_string($arrayParam)) {
+                        $types .= 's'; // string
+                    } else {
+                        $types .= 'b'; // blob
+                    }
+                    $bindParams[] = $arrayParam;
+                }
+            } else {
                 if (is_int($param)) {
                     $types .= 'i'; // integer
                 } elseif (is_double($param)) {
@@ -47,24 +66,36 @@ class MySqlDb
                 }
                 $bindParams[] = $param;
             }
+        }
 
-            array_unshift($bindParams, $types);
-            call_user_func_array(array($stmt, 'bind_param'), $this->refValues($bindParams));
+        array_unshift($bindParams, $types);
+        call_user_func_array(array($statement, 'bind_param'), $this->refValues($bindParams));
+    }
+
+    public function executeStatement(mysqli_stmt $statement): void
+    {
+        $statement->execute();
+
+        if ($statement->errno) {
+            throw new Exception("Error in statement execution: " . $statement->error);
         }
     }
 
-    public function executeStatement($stmt)
-    {
-        $stmt->execute();
-        if ($stmt->errno) {
-            die("Error in statement execution: " . $stmt->error);
+    public function getResult(mysqli_stmt $statement) {
+
+        $result = $statement->get_result();
+
+        if (!$result) {
+            throw new Exception("Error in getting result");
         }
+
+        return $result;
     }
 
-    public function closeStatement($stmt)
+    public function closeStatement(mysqli_stmt $statement): void
     {
-        if ($stmt) {
-            $stmt->close();
+        if ($statement) {
+            $statement->close();
         }
     }
 
@@ -73,12 +104,34 @@ class MySqlDb
         $this->connection->close();
     }
 
-    private function refValues($arr)
+    private function refValues(array $arr)
     {
         $refs = array();
         foreach ($arr as $key => $value) {
             $refs[$key] = &$arr[$key];
         }
         return $refs;
+    }
+
+    public function fetchAssoc(mysqli_result $result, ?string $key = null): array
+    {
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            if ($key) {
+                $keyVal = $row[$key] ?? null;
+                $rows[$keyVal] = (object) $row;
+            } else {
+                $rows[] = (object) $row;
+            }
+
+        }
+
+        return $rows;
+    }
+
+    public function in(array $values): string
+    {
+        $placeholders = implode(',', array_fill(0, count($values), '?'));
+        return "IN (" . $placeholders . ")";
     }
 }

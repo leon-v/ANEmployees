@@ -10,33 +10,21 @@ $mySql = new MySqlDb();
 
 // Prepare the statement
 $getEmployeesStatement = $mySql->prepareStatement("SELECT
-    company,
-    `name`,
-    email,
-    salary
+    Company.name AS company,
+    Company.companyId,
+    Employee.name,
+    Employee.email,
+    Employee.employeeId,
+    EmployeeSalary.salary
     FROM Employee
+    JOIN EmployeeSalary USING(employeeId)
+    JOIN Company USING(companyId)
 ");
 
-// Execute the statement
-$getEmployeesStatement->execute();
+$mySql->executeStatement($getEmployeesStatement);
 
-// Bind variables to store the results
-$getEmployeesStatement->bind_result($company, $name, $email, $salary);
+$result = $mySql->getResult($getEmployeesStatement);
 
-// Fetch data rows
-$employeeData = [];
-
-while ($getEmployeesStatement->fetch()) {
-    // Create an associative array for each row
-    $row = [
-        'company' => $company,
-        'name' => $name,
-        'email' => $email,
-        'salary' => $salary
-    ];
-
-    // Add the row to the result array
-    $employeeData[] = $row;
-}
+$employeeData = $mySql->fetchAssoc($result);
 
 jsonResponse(['employees' => $employeeData]);

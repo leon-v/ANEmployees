@@ -5,7 +5,13 @@ function debug(...$values){
     <pre>
         <?php
         foreach ($values as $value) {
-            print_r($value);
+            if ($value === null) {
+                echo 'NULL';
+            }
+            else{
+                print_r($value);
+            }
+
         }
         ?>
     </pre>
