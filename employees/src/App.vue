@@ -1,43 +1,53 @@
 <template>
     <div id="app">
         <img alt="Vue logo" src="./assets/logo.png">
-        <!-- Conditional rendering based on the uploadSuccess variable -->
-        <div v-if="uploadSuccess">
-            <!-- Render the EmployeeTable component when upload is successful -->
-            <employee-table :employees="employees" />
+        <div v-if="currentPage === 'fileUpload'">
+            <FileUpload @uploadSuccess="uploadSuccess" msg="Employees" />
         </div>
-        <div v-else>
-            <!-- Render the FileUpload component when upload is not successful -->
-            <FileUpload @uploadSuccess="handleUploadSuccess" msg="Employees" />
+        <div v-else-if="currentPage === 'employeeTable'">
+            <EmployeeTable :employees="employees" @editEmployee="editEmployee" />
+        </div>
+        <div v-else-if="currentPage === 'editEmployee'">
+            <EditEmployee :employee="selectedEmployee" @employeeEdited="employeeEdited" />
         </div>
     </div>
 </template>
 
 <script>
 import 'bootstrap/dist/css/bootstrap.css';
-import FileUpload from './components/FileUpload.vue'
-import EmployeeTable from './components/EmployeeTable.vue' // Import the EmployeeTable component
+import FileUpload from './components/FileUpload.vue';
+import EmployeeTable from './components/EmployeeTable.vue';
+import EditEmployee from './components/EditEmployee.vue';
 
 export default {
     name: 'App',
     components: {
         FileUpload,
-        EmployeeTable // Register the EmployeeTable component
+        EmployeeTable,
+        EditEmployee,
     },
     data() {
         return {
-            uploadSuccess: false, // Initially, upload is not successful
-            employees: [] // Data to store employees once uploaded
+            currentPage: 'fileUpload', // Initially, show the FileUpload component
+            employees: [],
+            selectedEmployee: null, // Store the selected employee for editing email
         };
     },
     methods: {
-        handleUploadSuccess(uploadedData) {
-            // Handle the successful upload and update the state
-            this.uploadSuccess = true;
-            this.employees = uploadedData; // Assuming uploadedData is an array of employees
+        uploadSuccess(uploadedData) {
+            this.employees = uploadedData;
+            this.currentPage = 'employeeTable';
+        },
+        editEmployee(employee) {
+            this.selectedEmployee = employee;
+            this.currentPage = 'editEmployee';
+        },
+        employeeEdited(){
+            this.selectedEmployee = null;
+            this.currentPage = 'employeeTable';
         }
-    }
-}
+    },
+};
 </script>
 
 <style>

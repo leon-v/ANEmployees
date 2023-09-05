@@ -48,7 +48,7 @@ export default {
                 })
                 .then((response) => {
                     if (response.headers['content-type'] && response.headers['content-type'].includes('application/json')) {
-                        this.$emit('upload-success');
+                        this.$emit('uploadSuccess');
                     } else {
                         alert('Invalid response format. Expected JSON. Response body: ' + response.data);
                     }
@@ -65,10 +65,9 @@ export default {
 
         },
         showTable() {
-            this.$emit('upload-success');
+            this.$emit('uploadSuccess');
         },
     },
 
 };
 </script>
-

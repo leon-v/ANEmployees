@@ -15,10 +15,13 @@
             <tbody>
                 <tr v-for="(employee, index) in employees" :key="index">
                     <td>{{ employee.company }}</td>
-                    <td>{{ employee.email }}</td>
-                    <td>{{ employee.name }}</td>
+                    <td>
+                        <a href="javascript:;" @click="editEmployee(employee)">{{ employee.email }}</a>
+                    </td>
+                    <td>
+                        <a href="javascript:;" @click="editEmployee(employee)">{{ employee.name }}</a>
+                    </td>
                     <td>{{ employee.salary }}</td>
-                    <!-- Add other table data as needed -->
                 </tr>
             </tbody>
         </table>
@@ -46,6 +49,9 @@ export default {
                 .catch(error => {
                     console.error("Error fetching data:", error); // Log the error
                 });
+        },
+        editEmployee(employee) {
+            this.$emit("editEmployee", employee);
         }
     },
     created() {
@@ -54,7 +60,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-/* Add any specific table styling here */
-</style>

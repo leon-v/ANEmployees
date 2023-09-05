@@ -5,7 +5,7 @@ include_once "MySqlDb.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(400);
-    die("This script only accepts POST.");
+    jsonResponse(['message' => "This script only accepts POST."], 400);
 }
 
 $csvFile = $_FILES['csvFile'] ?? null;
@@ -27,7 +27,6 @@ if ($fileExtension !== "csv") {
     jsonResponse(['message' => "Invalid file format. Please upload a CSV file."], 400);
 }
 
-// Initialize the MySQL database connection
 $mySql = new MySqlDb();
 
 // Open and read the CSV file
