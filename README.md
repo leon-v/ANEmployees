@@ -26,6 +26,10 @@ docker-compose up -d
 
 This command will start the Nginx, PHP-FPM, and MySQL containers in the background.
 
+3. Load the URL of the LEMP server:
+
+[http://localhost](http://localhost)
+
 ## File Structure
 
 The repository is structured as follows:
