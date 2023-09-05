@@ -14,8 +14,8 @@ Before you begin, make sure you have the following installed on your system:
 1. Clone this repository to your local machine:
 
 ```bash
-git clone <repository-url>
-cd <repository-directory>
+git leon-v/ANEmployees
+cd ANEmployees
 ```
 
 2. Build and start the Docker containers:
