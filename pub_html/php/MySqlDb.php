@@ -72,22 +72,29 @@ class MySqlDb
 
     /**
      * Bind parameters to a prepared statement.
+     * It includes support for generating dynamic 'IN' clauses for SQL queries.
+     *
+     * @see in()
      *
      * @param mysqli_stmt $statement The prepared statement to bind parameters to.
      * @param mixed ...$params The parameters to bind.
      */
     public function bindParams(mysqli_stmt $statement, ...$params): void
     {
+        // Check if parameters are provided
         if (empty($params)) {
             return;
         }
 
+        // Initialize variables for data type and parameter values
         $types = '';
         $bindParams = array();
 
         foreach ($params as $param) {
+            // Handle arrays of parameters
             if (is_array($param)) {
                 foreach ($param as $arrayParam) {
+                    // Determine data type and construct type string
                     if (is_int($arrayParam)) {
                         $types .= 'i'; // integer
                     } elseif (is_double($arrayParam)) {
@@ -100,6 +107,7 @@ class MySqlDb
                     $bindParams[] = $arrayParam;
                 }
             } else {
+                // Handle individual parameters
                 if (is_int($param)) {
                     $types .= 'i'; // integer
                 } elseif (is_double($param)) {
@@ -113,8 +121,23 @@ class MySqlDb
             }
         }
 
+        // Combine data type and parameters, then bind to the prepared statement
         array_unshift($bindParams, $types);
         call_user_func_array(array($statement, 'bind_param'), $this->refValues($bindParams));
+    }
+
+    /**
+     * Utility method to create an IN clause for SQL queries.
+     *
+     * @param array $values An array of values to be used in the IN clause.
+     *
+     * @return string The IN clause as a string.
+     */
+    public function in(array $values): string
+    {
+        // Generate placeholders for the IN clause based on the array size
+        $placeholders = implode(',', array_fill(0, count($values), '?'));
+        return "IN (" . $placeholders . ")";
     }
 
     /**
@@ -214,18 +237,5 @@ class MySqlDb
         }
 
         return $rows;
-    }
-
-    /**
-    * Utility method to create an IN clause for SQL queries.
-    *
-    * @param array $values An array of values to be used in the IN clause.
-    *
-    * @return string The IN clause as a string.
-    */
-    public function in(array $values): string
-    {
-        $placeholders = implode(',', array_fill(0, count($values), '?'));
-        return "IN (" . $placeholders . ")";
     }
 }
