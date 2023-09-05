@@ -9,7 +9,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Upload CSV</button>
                 </form>
-                <button @click="showTable" class="btn btn-primary">View Data</button><br><br>
+                <br>
                 <a href="/Employees.csv">Download Sample CSV File</a>
             </div>
         </div>

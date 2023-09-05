@@ -1,11 +1,18 @@
 <template>
     <div id="app">
         <img alt="Vue logo" src="./assets/logo.png">
+
+        <!-- Main menu component -->
+        <main-menu @changePage="changePage" />
+
         <div v-if="currentPage === 'fileUpload'">
             <FileUpload @uploadSuccess="uploadSuccess" msg="Employees" />
         </div>
         <div v-else-if="currentPage === 'employeeTable'">
-            <EmployeeTable :employees="employees" @editEmployee="editEmployee" />
+            <EmployeeTable @editEmployee="editEmployee" />
+        </div>
+        <div v-else-if="currentPage === 'companiesTable'">
+            <CompaniesTable />
         </div>
         <div v-else-if="currentPage === 'editEmployee'">
             <EditEmployee :employee="selectedEmployee" @employeeEdited="employeeEdited" />
@@ -17,19 +24,22 @@
 import 'bootstrap/dist/css/bootstrap.css';
 import FileUpload from './components/FileUpload.vue';
 import EmployeeTable from './components/EmployeeTable.vue';
+import CompaniesTable from './components/CompaniesTable.vue';
 import EditEmployee from './components/EditEmployee.vue';
+import MainMenu from './components/MainMenu.vue';
 
 export default {
     name: 'App',
     components: {
         FileUpload,
         EmployeeTable,
+        CompaniesTable,
         EditEmployee,
+        MainMenu,
     },
     data() {
         return {
             currentPage: 'fileUpload', // Initially, show the FileUpload component
-            employees: [],
             selectedEmployee: null, // Store the selected employee for editing email
         };
     },
@@ -45,6 +55,9 @@ export default {
         employeeEdited(){
             this.selectedEmployee = null;
             this.currentPage = 'employeeTable';
+        },
+        changePage(page) {
+            this.currentPage = page;
         }
     },
 };
