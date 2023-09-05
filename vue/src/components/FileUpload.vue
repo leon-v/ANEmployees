@@ -41,7 +41,7 @@ export default {
 
             // Make an HTTP POST request to the PHP script
             axios
-                .post('/php/FileUpload.php', formData, {
+                .post('/php/fileUpload.php', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
