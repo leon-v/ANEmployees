@@ -14,7 +14,7 @@ Before you begin, make sure you have the following installed on your system:
 1. Clone this repository to your local machine:
 
 ```bash
-git leon-v/ANEmployees
+gh repo clone leon-v/ANEmployees
 cd ANEmployees
 ```
 
