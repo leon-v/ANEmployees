@@ -21,7 +21,7 @@ cd ANEmployees
 2. Build and start the Docker containers:
 
 ```bash
-docker-compose up -d
+docker-compose up
 ```
 
 This command will start the Nginx, PHP-FPM, and MySQL containers in the background.
