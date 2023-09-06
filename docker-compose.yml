@@ -20,10 +20,12 @@ services:
     build:
       context: ./docker/php
       dockerfile: Dockerfile
+    image: php
     env_file: .env
     volumes:
       - ./pub_html:/var/www/html
-      - ./docker/php/custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini
+    depends_on:
+      - mysql
     networks:
       - lemp-net
 
@@ -35,6 +37,20 @@ services:
     env_file: .env
     volumes:
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - lemp-net
+
+  test:
+    build:
+      context: ./docker/test
+      dockerfile: Dockerfile
+    image: test
+    env_file: .env
+    volumes:
+      - ./pub_html:/var/www/html
+      - ./test:/var/www/html/test
+    depends_on:
+      - mysql
     networks:
       - lemp-net
 

@@ -21,7 +21,7 @@ cd ANEmployees
 2. Build and start the Docker containers:
 
 ```bash
-docker-compose up -d
+docker-compose up
 ```
 
 This command will start the Nginx, PHP-FPM, and MySQL containers in the background.
@@ -54,6 +54,16 @@ To develop PHP code within this environment:
 2. **Important Note**: Be cautious when modifying PHP files in the `/pub_html/php` directory, as these same files are used in both the development and production environments.
 
 3. Modify or add PHP files in the `/pub_html/php` directory. These files will be accessible through the LEMP stack.
+
+## Testing PHP
+
+There is an images dedicated to testing PHP.
+The `test` image will be run once and end showing the output to the terminal.
+You can start this image and run the tests with this command:
+
+```bash
+docker-compose run test
+```
 
 ## Developing Vue
 
