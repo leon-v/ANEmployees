@@ -1,19 +1,6 @@
 version: '3.8'
 
 services:
-  # Nginx service for serving web content
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    env_file: .env
-    volumes:
-      - ./docker/nginx:/etc/nginx/conf.d
-      - ./pub_html:/var/www/html
-    depends_on:
-      - php
-    networks:
-      - lemp-net
 
   # PHP-FPM service for processing PHP scripts
   php:
@@ -21,6 +8,8 @@ services:
       context: ./docker/php
       dockerfile: Dockerfile
     image: php
+    expose:
+      - "9000"
     env_file: .env
     volumes:
       - ./pub_html:/var/www/html
@@ -37,6 +26,20 @@ services:
     env_file: .env
     volumes:
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - lemp-net
+      
+  # Nginx service for serving web content
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    env_file: .env
+    volumes:
+      - ./docker/nginx:/etc/nginx/conf.d
+      - ./pub_html:/var/www/html
+    depends_on:
+      - php
     networks:
       - lemp-net
 
