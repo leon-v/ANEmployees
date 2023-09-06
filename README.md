@@ -55,6 +55,16 @@ To develop PHP code within this environment:
 
 3. Modify or add PHP files in the `/pub_html/php` directory. These files will be accessible through the LEMP stack.
 
+## Testing PHP
+
+There is an images dedicated to testing PHP.
+The `test` image will be run once and end showing the output to the terminal.
+You can start this image and run the tests with this command:
+
+```bash
+docker-compose run test
+```
+
 ## Developing Vue
 
 To develop the Vue frond end:
